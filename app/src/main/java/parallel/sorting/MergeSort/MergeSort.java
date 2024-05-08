@@ -1,10 +1,7 @@
 package parallel.sorting.MergeSort;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ForkJoinPool;
-
-import main.java.parallel.sorting.MergeSort.ParallelMergeSort;
+import parallel.sorting.MergeSort.ParallelMergeSort;
 
 public class MergeSort {
     private long startTime;
@@ -17,7 +14,7 @@ public class MergeSort {
     public int[] sort(int[] input, boolean is_parallel) {
         if (is_parallel) {
             final ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() - 1);
-
+            System.out.println("Number of processors: " + Runtime.getRuntime().availableProcessors());
             startTime = System.currentTimeMillis();
             forkJoinPool.invoke(new ParallelMergeSort(input, 0, input.length - 1));
             endTime = System.currentTimeMillis();

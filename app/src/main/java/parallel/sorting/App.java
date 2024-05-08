@@ -1,6 +1,7 @@
 package parallel.sorting;
 
 import parallel.sorting.MergeSort.MergeSort;
+import parallel.sorting.QuickSort.QuickSort;
 
 public class App {
 
@@ -15,7 +16,7 @@ public class App {
     }
 
     public static void main(String[] args) {
-        String[] algorithms = { "Merge Sort", "Selection Sort", "Insertion Sort" };
+        String[] algorithms = { "Merge Sort", "Quick Sort" };
 
         int algorithm = 0;
         System.out.println("Choose the sorting algorithm: ");
@@ -40,6 +41,7 @@ public class App {
         System.out.println("Parallel: " + is_parallel);
 
         if (algorithm == 1) {
+            // Merge Sort
             int[] sortedArray = unsortedArray;
             MergeSort mergeSort = new MergeSort();
             sortedArray = mergeSort.sort(sortedArray, is_parallel);
@@ -55,6 +57,23 @@ public class App {
             boolean isSorted = new App().checkSorted(sortedArray);
             System.out.println("isSorted: " + isSorted);
 
+        } else if (algorithm == 2) {
+            // Quick Sort
+            int[] sortedArray = unsortedArray;
+            QuickSort quickSort = new QuickSort();
+            quickSort.sort(sortedArray, is_parallel);
+            long elapsedTime1 = quickSort.getElapsedTime();
+            System.out.println("Time: " + elapsedTime1 + " ms");
+
+            boolean isSorted = new App().checkSorted(sortedArray);
+
+            /*
+             * for (int i = 0; i < sortedArray.length; i++) {
+             * System.out.println(sortedArray[i]);
+             * }
+             */
+
+            System.out.println("isSorted: " + isSorted);
         }
 
     }

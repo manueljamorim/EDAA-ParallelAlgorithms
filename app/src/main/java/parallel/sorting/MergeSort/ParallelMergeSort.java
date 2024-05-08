@@ -1,8 +1,5 @@
-package main.java.parallel.sorting.MergeSort;
+package parallel.sorting.MergeSort;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 public class ParallelMergeSort extends RecursiveTask {
@@ -76,4 +73,5 @@ public class ParallelMergeSort extends RecursiveTask {
         mergesort(array, helper, middle + 1, high);
         merge(array, helper, low, middle, high);
     }
+
 }
