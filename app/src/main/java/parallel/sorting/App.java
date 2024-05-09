@@ -2,6 +2,8 @@ package parallel.sorting;
 
 import parallel.sorting.MergeSort.MergeSort;
 import parallel.sorting.QuickSort.QuickSort;
+import parallel.sorting.BubbleSort.BubbleSort; // Import the BubbleSort class
+import java.util.Scanner;
 
 public class App {
 
@@ -10,28 +12,26 @@ public class App {
     public int[] getRandomArray(int length) {
         int[] array = new int[length];
         for (int i = 0; i < length; i++) {
-            array[i] = (int) (Math.random() * 40000);
+            array[i] = (int) (Math.random() * MAX_NUMBER);
         }
         return array;
     }
 
     public static void main(String[] args) {
-        String[] algorithms = { "Merge Sort", "Quick Sort" };
+        Scanner scanner = new Scanner(System.in);
+        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort" };
 
-        int algorithm = 0;
         System.out.println("Choose the sorting algorithm: ");
         for (int i = 0; i < algorithms.length; i++) {
             System.out.println((i + 1) + ". " + algorithms[i]);
         }
-        algorithm = Integer.parseInt(System.console().readLine());
+        int algorithm = Integer.parseInt(scanner.nextLine()); // Read algorithm choice
 
-        boolean is_parallel = false;
-        System.out.println("Parallell? y/n");
-        is_parallel = System.console().readLine().equals("y");
+        System.out.println("Parallel? y/n");
+        boolean is_parallel = scanner.nextLine().equalsIgnoreCase("y"); // Read parallel option
 
-        int length = 0;
         System.out.println("Enter the length of the array: ");
-        length = Integer.parseInt(System.console().readLine());
+        int length = Integer.parseInt(scanner.nextLine()); // Read array length
 
         int[] unsortedArray = new App().getRandomArray(length);
 
@@ -40,42 +40,44 @@ public class App {
         System.out.println("Length: " + length);
         System.out.println("Parallel: " + is_parallel);
 
-        if (algorithm == 1) {
-            // Merge Sort
-            int[] sortedArray = unsortedArray;
-            MergeSort mergeSort = new MergeSort();
-            sortedArray = mergeSort.sort(sortedArray, is_parallel);
-            long elapsedTime1 = mergeSort.getElapsedTime();
-            System.out.println("Time: " + elapsedTime1 + " ms");
+        long startTime, endTime;
+        boolean isSorted;
 
-            /*
-             * for (int i = 0; i < sortedArray.length; i++) {
-             * System.out.println(sortedArray[i]);
-             * }
-             */
+        switch (algorithm) {
+            case 1: // Merge Sort
+                MergeSort mergeSort = new MergeSort();
+                startTime = System.currentTimeMillis();
+                int[] sortedArrayMerge = mergeSort.sort(unsortedArray, is_parallel);
+                endTime = System.currentTimeMillis();
+                System.out.println("Time: " + (endTime - startTime) + " ms");
+                isSorted = new App().checkSorted(sortedArrayMerge);
+                System.out.println("isSorted: " + isSorted);
+                break;
 
-            boolean isSorted = new App().checkSorted(sortedArray);
-            System.out.println("isSorted: " + isSorted);
+            case 2: // Quick Sort
+                QuickSort quickSort = new QuickSort();
+                startTime = System.currentTimeMillis();
+                quickSort.sort(unsortedArray, is_parallel);
+                endTime = System.currentTimeMillis();
+                System.out.println("Time: " + (endTime - startTime) + " ms");
+                isSorted = new App().checkSorted(unsortedArray);
+                System.out.println("isSorted: " + isSorted);
+                break;
 
-        } else if (algorithm == 2) {
-            // Quick Sort
-            int[] sortedArray = unsortedArray;
-            QuickSort quickSort = new QuickSort();
-            quickSort.sort(sortedArray, is_parallel);
-            long elapsedTime1 = quickSort.getElapsedTime();
-            System.out.println("Time: " + elapsedTime1 + " ms");
+            case 3: // Bubble Sort
+                BubbleSort bubbleSort = new BubbleSort();
+                startTime = System.currentTimeMillis();
+                bubbleSort.sort(unsortedArray, is_parallel);
+                endTime = System.currentTimeMillis();
+                System.out.println("Time: " + (bubbleSort.getElapsedTime()) + " ms");
+                isSorted = new App().checkSorted(unsortedArray); // Assuming bubbleSort modifies the array in place
+                System.out.println("isSorted: " + isSorted);
+                break;
 
-            boolean isSorted = new App().checkSorted(sortedArray);
-
-            /*
-             * for (int i = 0; i < sortedArray.length; i++) {
-             * System.out.println(sortedArray[i]);
-             * }
-             */
-
-            System.out.println("isSorted: " + isSorted);
+            default:
+                System.out.println("Invalid algorithm choice.");
         }
-
+        scanner.close();
     }
 
     public boolean checkSorted(int[] array) {
@@ -86,5 +88,4 @@ public class App {
         }
         return true;
     }
-
 }

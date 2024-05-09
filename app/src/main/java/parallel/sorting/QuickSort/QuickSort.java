@@ -66,7 +66,7 @@ public class QuickSort {
         a[j] = temp;
     }
 
-    private static final class ParallelQuickSort extends RecursiveTask {
+    private static final class ParallelQuickSort extends RecursiveTask<Void> {
         private static final int MAX = 8192;
         private final int[] array;
         private final int low;
