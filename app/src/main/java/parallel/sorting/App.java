@@ -2,7 +2,7 @@ package parallel.sorting;
 
 import parallel.sorting.MergeSort.MergeSort;
 import parallel.sorting.QuickSort.QuickSort;
-import parallel.sorting.BubbleSort.BubbleSort; // Import the BubbleSort class
+import parallel.sorting.BubbleSort.BubbleSort;
 import java.util.Scanner;
 
 public class App {
@@ -19,7 +19,7 @@ public class App {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort" };
+        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort  / Odd Even Sort" };
 
         System.out.println("Choose the sorting algorithm: ");
         for (int i = 0; i < algorithms.length; i++) {
@@ -64,14 +64,17 @@ public class App {
                 System.out.println("isSorted: " + isSorted);
                 break;
 
-            case 3: // Bubble Sort
+            case 3: // Bubble Sort / Odd-Even Sort
                 BubbleSort bubbleSort = new BubbleSort();
                 startTime = System.currentTimeMillis();
                 bubbleSort.sort(unsortedArray, is_parallel);
                 endTime = System.currentTimeMillis();
                 System.out.println("Time: " + (bubbleSort.getElapsedTime()) + " ms");
-                isSorted = new App().checkSorted(unsortedArray); // Assuming bubbleSort modifies the array in place
+                isSorted = new App().checkSorted(unsortedArray);
                 System.out.println("isSorted: " + isSorted);
+                /* for (int j : unsortedArray) {
+                    System.out.print(j + " ");
+                }*/
                 break;
 
             default:

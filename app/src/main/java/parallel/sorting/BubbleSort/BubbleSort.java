@@ -1,89 +1,123 @@
 package parallel.sorting.BubbleSort;
 
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
 
 public class BubbleSort {
-    private long startTime;
-    private long endTime;
+    private long elapsedTime = 0;
+    private boolean logs = false; //enables logging
 
-    public long getElapsedTime() {
-        return endTime - startTime;
-    }
-
-    public void sort(int[] input, boolean is_parallel) {
-        if (is_parallel) {
-            final ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() - 1);
-            System.out.println("Number of processors: " + Runtime.getRuntime().availableProcessors());
-            startTime = System.currentTimeMillis();
-            forkJoinPool.invoke(new ParallelBubbleSort(input));
-            endTime = System.currentTimeMillis();
+    public void sort(int[] array, boolean isParallel) {
+        if (isParallel) {
+            parallelOddEvenSort(array);
         } else {
-            startTime = System.currentTimeMillis();
-            bubbleSort(input);
-            endTime = System.currentTimeMillis();
+            sequentialBubbleSort(array);
         }
     }
 
-    private void bubbleSort(int[] array) {
+    private void sequentialBubbleSort(int[] array) {
+        long startTime = System.currentTimeMillis();
+        boolean sorted = false;
         int n = array.length;
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                if (array[j] > array[j + 1]) {
-                    // swap temp and arr[i]
-                    int temp = array[j];
-                    array[j] = array[j + 1];
-                    array[j + 1] = temp;
+        while (!sorted) {
+            sorted = true;
+            for (int i = 0; i < n - 1; i++) {
+                if (array[i] > array[i + 1]) {
+                    swap(array, i, i + 1);
+                    sorted = false;
+                }
+            }
+            n--;
+        }
+        long endTime = System.currentTimeMillis();
+        elapsedTime = endTime - startTime;
+    }
+
+    private void parallelOddEvenSort(int[] array) {
+        ExecutorService executor = Executors.newWorkStealingPool();
+        long startTime = System.currentTimeMillis();
+        boolean sorted = false;
+
+        while (!sorted) {
+            AtomicInteger swapCount = new AtomicInteger(0);
+            for (int phase = 0; phase < 2; phase++) {
+                CountDownLatch latch = new CountDownLatch((array.length - 1) / 2);
+                if (logs) {
+                    System.out.println("Starting phase " + (phase == 0 ? "Even" : "Odd") + " with " + latch.getCount() + " tasks.");
+                }
+                for (int i = phase; i < array.length - 1; i += 2) {
+                    executor.execute(new SortTask(array, i, swapCount, latch));
+                }
+                try {
+                    latch.await();
+                    if (logs) {
+                        System.out.println("Phase " + (phase == 0 ? "Even" : "Odd") + " completed with " + swapCount.get() + " swaps.");
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            if (swapCount.get() == 0) {
+                sorted = true;
+                if (logs) {
+                    System.out.println("No swaps needed, array is sorted.");
                 }
             }
         }
+
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+
+        long endTime = System.currentTimeMillis();
+        elapsedTime = endTime - startTime;
     }
 
-    private static final class ParallelBubbleSort extends RecursiveAction {
-        private static final int THRESHOLD = 8192;
-        private final int[] array;
+    private void swap(int[] array, int i, int j) {
+        synchronized (array) {
+            int temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
 
-        public ParallelBubbleSort(final int[] array) {
+    class SortTask implements Runnable {
+        private int[] array;
+        private int index;
+        private AtomicInteger swapCount;
+        private CountDownLatch latch;
+
+        SortTask(int[] array, int index, AtomicInteger swapCount, CountDownLatch latch) {
             this.array = array;
+            this.index = index;
+            this.swapCount = swapCount;
+            this.latch = latch;
         }
 
         @Override
-        protected void compute() {
-            if (array.length <= THRESHOLD) {
-                new BubbleSort().bubbleSort(array);
-            } else {
-                int midpoint = array.length / 2;
-                int[] left = new int[midpoint];
-                int[] right = new int[array.length - midpoint];
-                System.arraycopy(array, 0, left, 0, midpoint);
-                System.arraycopy(array, midpoint, right, 0, array.length - midpoint);
-
-                ParallelBubbleSort leftTask = new ParallelBubbleSort(left);
-                ParallelBubbleSort rightTask = new ParallelBubbleSort(right);
-
-                invokeAll(leftTask, rightTask);
-
-                merge(left, right, array);
+        public void run() {
+            if (array[index] > array[index + 1]) {
+                swap(array, index, index + 1);
+                swapCount.incrementAndGet();
             }
+            latch.countDown();
         }
+    }
 
-        private void merge(int[] left, int[] right, int[] array) {
-            int i = 0, j = 0, k = 0;
-            while (i < left.length && j < right.length) {
-                if (left[i] <= right[j]) {
-                    array[k++] = left[i++];
-                } else {
-                    array[k++] = right[j++];
-                }
-            }
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
 
-            while (i < left.length) {
-                array[k++] = left[i++];
-            }
-
-            while (j < right.length) {
-                array[k++] = right[j++];
-            }
-        }
+    public void setLogs(boolean logs) {
+        this.logs = logs;
     }
 }
