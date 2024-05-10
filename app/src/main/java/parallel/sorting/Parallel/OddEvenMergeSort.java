@@ -5,40 +5,39 @@ import java.util.concurrent.*;
 
 public class OddEvenMergeSort {
     private final ExecutorService executor;
+    private final int availableProcessors;
 
     public OddEvenMergeSort() {
-        this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.availableProcessors = Runtime.getRuntime().availableProcessors();
+        this.executor = Executors.newFixedThreadPool(availableProcessors);
     }
 
     public int[] sort(int[] array) throws InterruptedException, ExecutionException {
-        Future<?> sortFuture = oddEvenMergeSort(array, 0, array.length);
+        int optimalSize = Math.max(array.length / availableProcessors, 1); // Ensure non-zero size
+        Future<?> sortFuture = oddEvenMergeSort(array, 0, array.length, optimalSize);
         sortFuture.get(); // Ensure sorting completes before proceeding.
         executor.shutdown();
-        //executor.awaitTermination(1, TimeUnit.HOURS);
+        executor.awaitTermination(1, TimeUnit.HOURS);
         return array;
     }
 
-    public CompletableFuture<Void> oddEvenMergeSort(int[] array, int low, int high) {
-        if (high - low <= 1) {
-            return CompletableFuture.completedFuture(null);
+    private CompletableFuture<Void> oddEvenMergeSort(int[] array, int low, int high, int optimalSize) {
+        if (high - low <= optimalSize) {
+            // Use sequential sort when the task size is less than or equal to the optimal size
+            return CompletableFuture.runAsync(() -> Arrays.sort(array, low, high), executor);
         }
 
         int mid = low + (high - low) / 2;
 
-        CompletableFuture<Void> left = oddEvenMergeSort(array, low, mid);
-        CompletableFuture<Void> right = oddEvenMergeSort(array, mid, high);
+        CompletableFuture<Void> left = oddEvenMergeSort(array, low, mid, optimalSize);
+        CompletableFuture<Void> right = oddEvenMergeSort(array, mid, high, optimalSize);
 
         return CompletableFuture.allOf(left, right)
-                .thenRun(() -> oddEvenMerge(array, low, mid, high));
+                .thenRun(() -> merge(array, low, mid, high));
     }
 
-    private void oddEvenMerge(int[] array, int low, int mid, int high) {
-        if (high - low == 1) return;
-        int n = high - low;
-        int m = n / 2;
-
-        if (n % 2 == 1) m++;
-        int[] temp = new int[n];
+    private void merge(int[] array, int low, int mid, int high) {
+        int[] temp = new int[high - low];
         int i = low, j = mid, k = 0;
         while (i < mid && j < high) {
             temp[k++] = array[i] <= array[j] ? array[i++] : array[j++];

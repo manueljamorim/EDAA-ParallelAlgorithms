@@ -1,6 +1,7 @@
 package parallel.sorting;
 
 import parallel.sorting.MergeSort.MergeSort;
+import parallel.sorting.Parallel.BitonicMergeSort;
 import parallel.sorting.Parallel.OddEvenMergeSort;
 import parallel.sorting.QuickSort.QuickSort;
 import parallel.sorting.BubbleSort.BubbleSort;
@@ -21,7 +22,7 @@ public class App {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         Scanner scanner = new Scanner(System.in);
-        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort", "Odd-Even Merge Sort" };
+        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort", "Odd-Even Merge Sort (only parallel)", "Bitonic Merge Sort (only parallel)" };
 
         System.out.println("Choose the sorting algorithm: ");
         for (int i = 0; i < algorithms.length; i++) {
@@ -29,8 +30,11 @@ public class App {
         }
         int algorithm = Integer.parseInt(scanner.nextLine()); // Read algorithm choice
 
-        System.out.println("Parallel? y/n");
-        boolean is_parallel = scanner.nextLine().equalsIgnoreCase("y"); // Read parallel option
+        boolean is_parallel = false;
+        if (algorithm >= 1 && algorithm <= 3) { // Assuming only the first three are parallelizable
+            System.out.println("Parallel? y/n");
+            is_parallel = scanner.nextLine().equalsIgnoreCase("y"); // Read parallel option
+        }
 
         System.out.println("Enter the length of the array: ");
         int length = Integer.parseInt(scanner.nextLine()); // Read array length
@@ -52,7 +56,7 @@ public class App {
                 int[] sortedArrayMerge = mergeSort.sort(unsortedArray, is_parallel);
                 endTime = System.currentTimeMillis();
                 System.out.println("Time: " + (endTime - startTime) + " ms");
-                isSorted = new App().checkSorted(sortedArrayMerge);
+                isSorted = checkSorted(sortedArrayMerge);
                 System.out.println("isSorted: " + isSorted);
                 break;
 
@@ -62,7 +66,7 @@ public class App {
                 quickSort.sort(unsortedArray, is_parallel);
                 endTime = System.currentTimeMillis();
                 System.out.println("Time: " + (endTime - startTime) + " ms");
-                isSorted = new App().checkSorted(unsortedArray);
+                isSorted = checkSorted(unsortedArray);
                 System.out.println("isSorted: " + isSorted);
                 break;
 
@@ -72,7 +76,7 @@ public class App {
                 bubbleSort.sort(unsortedArray, is_parallel);
                 endTime = System.currentTimeMillis();
                 System.out.println("Time: " + (bubbleSort.getElapsedTime()) + " ms");
-                isSorted = new App().checkSorted(unsortedArray);
+                isSorted = checkSorted(unsortedArray);
                 System.out.println("isSorted: " + isSorted);
                 break;
 
@@ -82,9 +86,20 @@ public class App {
                 int[] sortedArrayOddEven = oddEvenMergeSort.sort(unsortedArray);
                 endTime = System.currentTimeMillis();
                 System.out.println("Time: " + (endTime - startTime) + " ms");
-                isSorted = new App().checkSorted(sortedArrayOddEven);
+                isSorted = checkSorted(sortedArrayOddEven);
                 System.out.println("isSorted: " + isSorted);
                 /*for (int j : sortedArrayOddEven ) {
+                    System.out.print(j + " ");
+                }*/
+                break;
+            case 5: // Bitonic Merge Sort
+                startTime = System.currentTimeMillis();
+                BitonicMergeSort.sort(unsortedArray); // Assuming static sort method
+                endTime = System.currentTimeMillis();
+                System.out.println("Time: " + (endTime - startTime) + " ms");
+                isSorted = checkSorted(unsortedArray);
+                System.out.println("isSorted: " + isSorted);
+                /*for (int j : unsortedArray ) {
                     System.out.print(j + " ");
                 }*/
                 break;
@@ -95,7 +110,7 @@ public class App {
         scanner.close();
     }
 
-    public boolean checkSorted(int[] array) {
+    public static boolean checkSorted(int[] array) {
         for (int i = 0; i < array.length - 1; i++) {
             if (array[i] > array[i + 1]) {
                 return false;
