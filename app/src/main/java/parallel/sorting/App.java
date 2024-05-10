@@ -1,9 +1,11 @@
 package parallel.sorting;
 
 import parallel.sorting.MergeSort.MergeSort;
+import parallel.sorting.Parallel.OddEvenMergeSort;
 import parallel.sorting.QuickSort.QuickSort;
 import parallel.sorting.BubbleSort.BubbleSort;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 
 public class App {
 
@@ -17,9 +19,9 @@ public class App {
         return array;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         Scanner scanner = new Scanner(System.in);
-        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort" };
+        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort", "Odd-Even Merge Sort" };
 
         System.out.println("Choose the sorting algorithm: ");
         for (int i = 0; i < algorithms.length; i++) {
@@ -72,7 +74,17 @@ public class App {
                 System.out.println("Time: " + (bubbleSort.getElapsedTime()) + " ms");
                 isSorted = new App().checkSorted(unsortedArray);
                 System.out.println("isSorted: " + isSorted);
-                /*for (int j : unsortedArray) {
+                break;
+
+            case 4: // Odd-Even Merge Sort
+                OddEvenMergeSort oddEvenMergeSort = new OddEvenMergeSort();
+                startTime = System.currentTimeMillis();
+                int[] sortedArrayOddEven = oddEvenMergeSort.sort(unsortedArray);
+                endTime = System.currentTimeMillis();
+                System.out.println("Time: " + (endTime - startTime) + " ms");
+                isSorted = new App().checkSorted(sortedArrayOddEven);
+                System.out.println("isSorted: " + isSorted);
+                /*for (int j : sortedArrayOddEven ) {
                     System.out.print(j + " ");
                 }*/
                 break;
