@@ -1,14 +1,14 @@
 package parallel.sorting.BubbleSort;
 
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BubbleSort {
     private long elapsedTime = 0;
-    private boolean logs = false; //enables logging
+    private boolean logs = false; // enables logging
 
     public void sort(int[] array, boolean isParallel) {
         if (isParallel) {
@@ -18,106 +18,85 @@ public class BubbleSort {
         }
     }
 
-    private void sequentialBubbleSort(int[] array) {
-        long startTime = System.currentTimeMillis();
-        boolean sorted = false;
-        int n = array.length;
-        while (!sorted) {
-            sorted = true;
-            for (int i = 0; i < n - 1; i++) {
-                if (array[i] > array[i + 1]) {
-                    swap(array, i, i + 1);
-                    sorted = false;
-                }
-            }
-            n--;
-        }
-        long endTime = System.currentTimeMillis();
-        elapsedTime = endTime - startTime;
-    }
-
     private void parallelOddEvenSort(int[] array) {
-        ExecutorService executor = Executors.newWorkStealingPool();
-        long startTime = System.currentTimeMillis();
-        boolean sorted = false;
+        final int threads = Runtime.getRuntime().availableProcessors();
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        CyclicBarrier barrier = new CyclicBarrier(threads, () -> {
+            if (logs) System.out.println("Phase completed, all threads synchronized.");
+        });
 
-        while (!sorted) {
-            AtomicInteger swapCount = new AtomicInteger(0);
-            for (int phase = 0; phase < 2; phase++) {
-                CountDownLatch latch = new CountDownLatch((array.length - 1) / 2);
-                if (logs) {
-                    System.out.println("Starting phase " + (phase == 0 ? "Even" : "Odd") + " with " + latch.getCount() + " tasks.");
+        long startTime = System.currentTimeMillis();
+        int n = array.length;
+
+        for (int phase = 0; phase < n; phase++) {
+            AtomicBoolean swapped = new AtomicBoolean(false);
+            boolean oddPhase = (phase % 2 != 0);
+            int startPhase = oddPhase ? 1 : 0;
+
+            for (int t = 0; t < threads; t++) {
+                int chunkSize = (n / threads) + (t < threads - 1 ? 1 : 0); // Allow overlap except for the last thread
+                int start = t * (n / threads) + startPhase;
+                int end; // Ensures we do not go out of bounds
+
+                if (t == threads - 1) {
+                    end = n - 1; // Ensure the last thread covers all remaining elements
+                } else {
+                    end = Math.min(start + chunkSize - 1, n - 1);
                 }
-                for (int i = phase; i < array.length - 1; i += 2) {
-                    executor.execute(new SortTask(array, i, swapCount, latch));
-                }
-                try {
-                    latch.await();
-                    if (logs) {
-                        System.out.println("Phase " + (phase == 0 ? "Even" : "Odd") + " completed with " + swapCount.get() + " swaps.");
+
+                executor.execute(() -> {
+                    for (int i = start; i < end; i += 2) {
+                        if (array[i] > array[i + 1]) {
+                            int temp = array[i];
+                            array[i] = array[i + 1];
+                            array[i + 1] = temp;
+                        }
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+                    try {
+                        barrier.await();
+                        if (logs) System.out.println("Thread passed barrier.");
+                    } catch (Exception e) {
+                        System.out.println("Barrier exception: " + e.getMessage());
+                        Thread.currentThread().interrupt();
+                    }
+                });
+
             }
-            if (swapCount.get() == 0) {
-                sorted = true;
-                if (logs) {
-                    System.out.println("No swaps needed, array is sorted.");
-                }
-            }
+            if (logs) System.out.println("Phase " + phase + " completed.");
         }
 
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            executor.shutdownNow();
+            executor.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        long endTime = System.currentTimeMillis();
-        elapsedTime = endTime - startTime;
+        elapsedTime = System.currentTimeMillis() - startTime;
     }
 
-    private void swap(int[] array, int i, int j) {
-        synchronized (array) {
-            int temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
-        }
+    private void sequentialBubbleSort(int[] array) {
+        long startTime = System.currentTimeMillis();
+        bubbleSort(array, 0, array.length - 1);
+        elapsedTime = System.currentTimeMillis() - startTime;
     }
 
-    class SortTask implements Runnable {
-        private int[] array;
-        private int index;
-        private AtomicInteger swapCount;
-        private CountDownLatch latch;
-
-        SortTask(int[] array, int index, AtomicInteger swapCount, CountDownLatch latch) {
-            this.array = array;
-            this.index = index;
-            this.swapCount = swapCount;
-            this.latch = latch;
-        }
-
-        @Override
-        public void run() {
-            if (array[index] > array[index + 1]) {
-                swap(array, index, index + 1);
-                swapCount.incrementAndGet();
+    private void bubbleSort(int[] array, int start, int end) {
+        boolean swapped;
+        do {
+            swapped = false;
+            for (int i = start; i < end; i++) {
+                if (array[i] > array[i + 1]) {
+                    int temp = array[i];
+                    array[i] = array[i + 1];
+                    array[i + 1] = temp;
+                    swapped = true;
+                }
             }
-            latch.countDown();
-        }
+        } while (swapped);
     }
 
     public long getElapsedTime() {
         return elapsedTime;
-    }
-
-    public void setLogs(boolean logs) {
-        this.logs = logs;
     }
 }

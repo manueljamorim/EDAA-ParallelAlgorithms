@@ -19,7 +19,7 @@ public class App {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort  / Odd Even Sort" };
+        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort" };
 
         System.out.println("Choose the sorting algorithm: ");
         for (int i = 0; i < algorithms.length; i++) {
@@ -64,7 +64,7 @@ public class App {
                 System.out.println("isSorted: " + isSorted);
                 break;
 
-            case 3: // Bubble Sort / Odd-Even Sort
+            case 3: // Bubble Sort
                 BubbleSort bubbleSort = new BubbleSort();
                 startTime = System.currentTimeMillis();
                 bubbleSort.sort(unsortedArray, is_parallel);
@@ -72,7 +72,7 @@ public class App {
                 System.out.println("Time: " + (bubbleSort.getElapsedTime()) + " ms");
                 isSorted = new App().checkSorted(unsortedArray);
                 System.out.println("isSorted: " + isSorted);
-                /* for (int j : unsortedArray) {
+                /*for (int j : unsortedArray) {
                     System.out.print(j + " ");
                 }*/
                 break;
