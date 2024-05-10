@@ -58,5 +58,4 @@ public class BitonicMergeSort {
             array[j] = temp;
         }
     }
-    
 }
