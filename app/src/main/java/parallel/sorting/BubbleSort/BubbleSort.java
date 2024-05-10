@@ -4,6 +4,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BubbleSort {
     private long elapsedTime = 0;
@@ -28,23 +29,23 @@ public class BubbleSort {
         int n = array.length;
 
         for (int phase = 0; phase < n; phase++) {
+            AtomicBoolean swapped = new AtomicBoolean(false);
             boolean oddPhase = (phase % 2 != 0);
             int startPhase = oddPhase ? 1 : 0;
 
-            // Assign chunks of the array to each thread
-            int chunkSize = (n / threads);
             for (int t = 0; t < threads; t++) {
-                int start = t * chunkSize + startPhase;
-                int end = (t + 1) * chunkSize + startPhase - 1;
-                if (t == threads - 1) { // Last thread takes care of the remainder
-                    end = n - 1;
+                int chunkSize = (n / threads) + (t < threads - 1 ? 1 : 0); // Allow overlap except for the last thread
+                int start = t * (n / threads) + startPhase;
+                int end; // Ensures we do not go out of bounds
+
+                if (t == threads - 1) {
+                    end = n - 1; // Ensure the last thread covers all remaining elements
+                } else {
+                    end = Math.min(start + chunkSize - 1, n - 1);
                 }
-                int finalStart = start;
-                int finalEnd = end;
 
                 executor.execute(() -> {
-                    for (int i = finalStart; i < finalEnd; i += 2) {
-                        if (logs) System.out.println("Thread starting: handling index " + i);
+                    for (int i = start; i < end; i += 2) {
                         if (array[i] > array[i + 1]) {
                             int temp = array[i];
                             array[i] = array[i + 1];
@@ -60,6 +61,7 @@ public class BubbleSort {
                     }
                 });
             }
+            if (logs) System.out.println("Phase " + phase + " completed.");
         }
 
         executor.shutdown();
