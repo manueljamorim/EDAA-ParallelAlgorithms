@@ -72,9 +72,9 @@ public class App {
                 System.out.println("Time: " + (bubbleSort.getElapsedTime()) + " ms");
                 isSorted = new App().checkSorted(unsortedArray);
                 System.out.println("isSorted: " + isSorted);
-                /* for (int j : unsortedArray) {
+                for (int j : unsortedArray) {
                     System.out.print(j + " ");
-                }*/
+                }
                 break;
 
             default:

@@ -1,39 +1,65 @@
 package parallel.sorting.BubbleSort;
 
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class BubbleSort {
     private long elapsedTime = 0;
-    private boolean logs = true; // enables logging
+    private boolean logs = false; // enables logging
 
     public void sort(int[] array, boolean isParallel) {
         if (isParallel) {
-            parallelDivideAndConquerSort(array);
+            parallelOddEvenSort(array);
         } else {
             sequentialBubbleSort(array);
         }
     }
 
-    private void sequentialBubbleSort(int[] array) {
-        long startTime = System.currentTimeMillis();
-        bubbleSort(array, 0, array.length - 1);
-        elapsedTime = System.currentTimeMillis() - startTime;
-    }
-
-    private void parallelDivideAndConquerSort(int[] array) {
-        int threads = Runtime.getRuntime().availableProcessors();
+    private void parallelOddEvenSort(int[] array) {
+        final int threads = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(threads);
+        CyclicBarrier barrier = new CyclicBarrier(threads, () -> {
+            if (logs) System.out.println("Phase completed, all threads synchronized.");
+        });
 
         long startTime = System.currentTimeMillis();
+        int n = array.length;
 
-        // Divide array and sort segments in parallel
-        int chunkSize = (int) Math.ceil(array.length / (double) threads);
-        for (int i = 0; i < threads; i++) {
-            int start = i * chunkSize;
-            int end = Math.min((i + 1) * chunkSize - 1, array.length - 1);
-            executor.execute(() -> bubbleSort(array, start, end));
+        for (int phase = 0; phase < n; phase++) {
+            boolean oddPhase = (phase % 2 != 0);
+            int startPhase = oddPhase ? 1 : 0;
+
+            // Assign chunks of the array to each thread
+            int chunkSize = (n / threads);
+            for (int t = 0; t < threads; t++) {
+                int start = t * chunkSize + startPhase;
+                int end = (t + 1) * chunkSize + startPhase - 1;
+                if (t == threads - 1) { // Last thread takes care of the remainder
+                    end = n - 1;
+                }
+                int finalStart = start;
+                int finalEnd = end;
+
+                executor.execute(() -> {
+                    for (int i = finalStart; i < finalEnd; i += 2) {
+                        if (logs) System.out.println("Thread starting: handling index " + i);
+                        if (array[i] > array[i + 1]) {
+                            int temp = array[i];
+                            array[i] = array[i + 1];
+                            array[i + 1] = temp;
+                        }
+                    }
+                    try {
+                        barrier.await();
+                        if (logs) System.out.println("Thread passed barrier.");
+                    } catch (Exception e) {
+                        System.out.println("Barrier exception: " + e.getMessage());
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            }
         }
 
         executor.shutdown();
@@ -43,10 +69,12 @@ public class BubbleSort {
             Thread.currentThread().interrupt();
         }
 
-        // Merge sort needed if segments were independently sorted
-        // This is a simplified merge step that re-sorts the entire array
-        bubbleSort(array, 0, array.length - 1);
+        elapsedTime = System.currentTimeMillis() - startTime;
+    }
 
+    private void sequentialBubbleSort(int[] array) {
+        long startTime = System.currentTimeMillis();
+        bubbleSort(array, 0, array.length - 1);
         elapsedTime = System.currentTimeMillis() - startTime;
     }
 
