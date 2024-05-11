@@ -16,7 +16,7 @@ public class QuickSort {
     public void sort(int[] input, boolean is_parallel) {
         if (is_parallel) {
             final ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() - 1);
-            System.out.println("Number of processors: " + Runtime.getRuntime().availableProcessors());
+            //System.out.println("Number of processors: " + Runtime.getRuntime().availableProcessors());
             startTime = System.currentTimeMillis();
             forkJoinPool.invoke(new ParallelQuickSort(input, 0, input.length - 1));
             endTime = System.currentTimeMillis();
