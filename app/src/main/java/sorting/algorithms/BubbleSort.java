@@ -3,6 +3,7 @@ package sorting.algorithms;
 import sorting.IntSorter;
 
 public class BubbleSort  implements IntSorter {
+
     @Override
     public void sort(int[] array) {
         boolean sorted = false;
