@@ -15,6 +15,14 @@ public class ParallelMergeSort extends RecursiveTask {
         helper = new int[array.length];
         this.low = low;
         this.high = high;
+        /*
+            final ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() - 1);
+            //System.out.println("Number of processors: " + Runtime.getRuntime().availableProcessors());
+            startTime = System.currentTimeMillis();
+            forkJoinPool.invoke(new ParallelMergeSort(input, 0, input.length - 1));
+            endTime = System.currentTimeMillis();
+            return input;
+         */
     }
 
     @Override

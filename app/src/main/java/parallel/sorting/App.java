@@ -5,6 +5,9 @@ import parallel.sorting.Parallel.BitonicMergeSort;
 import parallel.sorting.Parallel.OddEvenMergeSort;
 import parallel.sorting.QuickSort.QuickSort;
 import parallel.sorting.BubbleSort.BubbleSort;
+import sorting.Benchmark;
+
+import java.io.IOException;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
@@ -21,93 +24,107 @@ public class App {
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        Scanner scanner = new Scanner(System.in);
-        String[] algorithms = { "Merge Sort", "Quick Sort", "Bubble Sort", "Odd-Even Merge Sort (only parallel)", "Bitonic Merge Sort (only parallel)" };
 
-        System.out.println("Choose the sorting algorithm: ");
-        for (int i = 0; i < algorithms.length; i++) {
-            System.out.println((i + 1) + ". " + algorithms[i]);
-        }
-        int algorithm = Integer.parseInt(scanner.nextLine()); // Read algorithm choice
+        if(true){
+                Runnable runBenchmarks = () -> {
+                    try {
+                        Benchmark.runBenchmarks();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                };
+                runBenchmarks.run();
+        }else {
 
-        boolean is_parallel = false;
-        if (algorithm >= 1 && algorithm <= 3) { // Assuming only the first three are parallelizable
-            System.out.println("Parallel? y/n");
-            is_parallel = scanner.nextLine().equalsIgnoreCase("y"); // Read parallel option
-        }
 
-        System.out.println("Enter the length of the array: ");
-        int length = Integer.parseInt(scanner.nextLine()); // Read array length
+            Scanner scanner = new Scanner(System.in);
+            String[] algorithms = {"Merge Sort", "Quick Sort", "Bubble Sort", "Odd-Even Merge Sort (only parallel)", "Bitonic Merge Sort (only parallel)"};
 
-        int[] unsortedArray = new App().getRandomArray(length);
+            System.out.println("Choose the sorting algorithm: ");
+            for (int i = 0; i < algorithms.length; i++) {
+                System.out.println((i + 1) + ". " + algorithms[i]);
+            }
+            int algorithm = Integer.parseInt(scanner.nextLine()); // Read algorithm choice
 
-        System.out.println("Sorting -----------------");
-        System.out.println("Algorithm: " + algorithms[algorithm - 1]);
-        System.out.println("Length: " + length);
-        System.out.println("Parallel: " + is_parallel);
+            boolean is_parallel = false;
+            if (algorithm >= 1 && algorithm <= 3) { // Assuming only the first three are parallelizable
+                System.out.println("Parallel? y/n");
+                is_parallel = scanner.nextLine().equalsIgnoreCase("y"); // Read parallel option
+            }
 
-        long startTime, endTime;
-        boolean isSorted;
+            System.out.println("Enter the length of the array: ");
+            int length = Integer.parseInt(scanner.nextLine()); // Read array length
 
-        switch (algorithm) {
-            case 1: // Merge Sort
-                MergeSort mergeSort = new MergeSort();
-                startTime = System.currentTimeMillis();
-                int[] sortedArrayMerge = mergeSort.sort(unsortedArray, is_parallel);
-                endTime = System.currentTimeMillis();
-                System.out.println("Time: " + (endTime - startTime) + " ms");
-                isSorted = checkSorted(sortedArrayMerge);
-                System.out.println("isSorted: " + isSorted);
-                break;
+            int[] unsortedArray = new App().getRandomArray(length);
 
-            case 2: // Quick Sort
-                QuickSort quickSort = new QuickSort();
-                startTime = System.currentTimeMillis();
-                quickSort.sort(unsortedArray, is_parallel);
-                endTime = System.currentTimeMillis();
-                System.out.println("Time: " + (endTime - startTime) + " ms");
-                isSorted = checkSorted(unsortedArray);
-                System.out.println("isSorted: " + isSorted);
-                break;
+            System.out.println("Sorting -----------------");
+            System.out.println("Algorithm: " + algorithms[algorithm - 1]);
+            System.out.println("Length: " + length);
+            System.out.println("Parallel: " + is_parallel);
 
-            case 3: // Bubble Sort
-                BubbleSort bubbleSort = new BubbleSort();
-                startTime = System.currentTimeMillis();
-                bubbleSort.sort(unsortedArray, is_parallel);
-                endTime = System.currentTimeMillis();
-                System.out.println("Time: " + (bubbleSort.getElapsedTime()) + " ms");
-                isSorted = checkSorted(unsortedArray);
-                System.out.println("isSorted: " + isSorted);
-                break;
+            long startTime, endTime;
+            boolean isSorted;
 
-            case 4: // Odd-Even Merge Sort
-                OddEvenMergeSort oddEvenMergeSort = new OddEvenMergeSort();
-                startTime = System.currentTimeMillis();
-                int[] sortedArrayOddEven = oddEvenMergeSort.sort(unsortedArray);
-                endTime = System.currentTimeMillis();
-                System.out.println("Time: " + (endTime - startTime) + " ms");
-                isSorted = checkSorted(sortedArrayOddEven);
-                System.out.println("isSorted: " + isSorted);
+            switch (algorithm) {
+                case 1: // Merge Sort
+                    MergeSort mergeSort = new MergeSort();
+                    startTime = System.currentTimeMillis();
+                    mergeSort.sort(unsortedArray);
+                    endTime = System.currentTimeMillis();
+                    System.out.println("Time: " + (endTime - startTime) + " ms");
+                    isSorted = checkSorted(unsortedArray);
+                    System.out.println("isSorted: " + isSorted);
+                    break;
+
+                case 2: // Quick Sort
+                    QuickSort quickSort = new QuickSort();
+                    startTime = System.currentTimeMillis();
+                    quickSort.sort(unsortedArray, is_parallel);
+                    endTime = System.currentTimeMillis();
+                    System.out.println("Time: " + (endTime - startTime) + " ms");
+                    isSorted = checkSorted(unsortedArray);
+                    System.out.println("isSorted: " + isSorted);
+                    break;
+
+                case 3: // Bubble Sort
+                    BubbleSort bubbleSort = new BubbleSort();
+                    startTime = System.currentTimeMillis();
+                    bubbleSort.sort(unsortedArray, is_parallel);
+                    endTime = System.currentTimeMillis();
+                    System.out.println("Time: " + (bubbleSort.getElapsedTime()) + " ms");
+                    isSorted = checkSorted(unsortedArray);
+                    System.out.println("isSorted: " + isSorted);
+                    break;
+
+                case 4: // Odd-Even Merge Sort
+                    OddEvenMergeSort oddEvenMergeSort = new OddEvenMergeSort();
+                    startTime = System.currentTimeMillis();
+                    int[] sortedArrayOddEven = oddEvenMergeSort.sort(unsortedArray);
+                    endTime = System.currentTimeMillis();
+                    System.out.println("Time: " + (endTime - startTime) + " ms");
+                    isSorted = checkSorted(sortedArrayOddEven);
+                    System.out.println("isSorted: " + isSorted);
                 /*for (int j : sortedArrayOddEven ) {
                     System.out.print(j + " ");
                 }*/
-                break;
-            case 5: // Bitonic Merge Sort
-                startTime = System.currentTimeMillis();
-                BitonicMergeSort.sort(unsortedArray); // Assuming static sort method
-                endTime = System.currentTimeMillis();
-                System.out.println("Time: " + (endTime - startTime) + " ms");
-                isSorted = checkSorted(unsortedArray);
-                System.out.println("isSorted: " + isSorted);
+                    break;
+                case 5: // Bitonic Merge Sort
+                    startTime = System.currentTimeMillis();
+                    BitonicMergeSort.sort(unsortedArray); // Assuming static sort method
+                    endTime = System.currentTimeMillis();
+                    System.out.println("Time: " + (endTime - startTime) + " ms");
+                    isSorted = checkSorted(unsortedArray);
+                    System.out.println("isSorted: " + isSorted);
                 /*for (int j : unsortedArray ) {
                     System.out.print(j + " ");
                 }*/
-                break;
+                    break;
 
-            default:
-                System.out.println("Invalid algorithm choice.");
+                default:
+                    System.out.println("Invalid algorithm choice.");
+            }
+            scanner.close();
         }
-        scanner.close();
     }
 
     public static boolean checkSorted(int[] array) {
