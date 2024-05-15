@@ -63,13 +63,6 @@ public class Benchmark {
         }
     }
 
-    private static int[] getRandomArray(int length) {
-        int[] array = new int[length];
-        for (int i = 0; i < length; i++) {
-            array[i] = (int) (Math.random() * MAX_NUMBER);
-        }
-        return array;
-    }
 
     public static boolean checkSorted(int[] array) {
         for (int i = 0; i < array.length - 1; i++) {
