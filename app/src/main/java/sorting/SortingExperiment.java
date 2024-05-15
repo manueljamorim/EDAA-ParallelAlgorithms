@@ -11,10 +11,10 @@ public class SortingExperiment {
             return endTime - startTime;
         }
         public void start(){
-            startTime = System.currentTimeMillis();
+            startTime = System.nanoTime() / 1000;
         }
         public void stop(){
-            endTime = System.currentTimeMillis();
+            endTime = System.nanoTime() / 1000;
         }
     }
     public SorterDetails sorter;
@@ -37,17 +37,23 @@ public class SortingExperiment {
         return r.toString();
     }
 
-    public void run(){
+
+    public void run(boolean log){
 
         IntSorter s = this.sorter.algorithm.get();
         int[] a = this.array.get();
         this.n = a.length;
-
+        if (log){
+            System.out.printf("[Experiment] %s %s on %d elements\n",sorter.name,sorter.isParallel?"parallel": "sequential",n);
+        }
         StopWatch clock = new StopWatch();
         clock.start();
         s.sort(a);
         clock.stop();
         this.time = clock.get();
+        if(log){
+            System.out.printf("   -> Took %d ms \n",time/1000);
+        }
 
     }
 

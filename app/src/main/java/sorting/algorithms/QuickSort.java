@@ -50,9 +50,6 @@ public class QuickSort implements IntSorter {
             return;
         }
         int pivot_index = this.pivot.choose(begin, end, array);
-        List<String> to_print = new LinkedList<>();
-        to_print.add(String.format("Begin %d Pivot: %d End: %d", begin, pivot_index, end));
-        to_print.add(print_array(begin, end, array));
         int pivot = array[pivot_index];
         for (int i = begin; i < end; i++) {
             if (array[i] > pivot && i < pivot_index) {
@@ -68,13 +65,8 @@ public class QuickSort implements IntSorter {
                 array[pivot_index] = pivot;
             }
         }
-        to_print.add(print_quicksort(begin, end, pivot_index, array));
         sort(begin, pivot_index - 1, array);
         sort(pivot_index + 1, end, array);
-        to_print.add(print_quicksort(begin, end, pivot_index, array));
-        for (String s : to_print) {
-            System.out.println(s);
-        }
 
 
     }

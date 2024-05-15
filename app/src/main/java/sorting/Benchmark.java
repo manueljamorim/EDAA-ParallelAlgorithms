@@ -28,7 +28,7 @@ public class Benchmark{
 
     static List<SorterDetails> sequential_nlogn= Arrays.asList(
             new SorterDetails (MergeSort::new,"mergesort",false,null),
-            new SorterDetails(() -> new QuickSort(Optional.empty()),"mergesort",false,null)
+            new SorterDetails(() -> new QuickSort(Optional.empty()),"quicksort",false,null)
     );
 
     public static List<SortingExperiment> sequentialExperiments(){
@@ -54,26 +54,19 @@ public class Benchmark{
         return experiments;
     }
 
-    public static void main(String[] args){
-
-
-
-        File file = new File("append.txt");
-        FileWriter fr = null;
-        try {
-            fr = new FileWriter(file, true);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        PrintWriter pr = new PrintWriter(fr);
-
+    public static void runBenchmarks() throws IOException{
+        FileWriter fileWriter = new FileWriter("append.csv");
+        PrintWriter pr= new PrintWriter(fileWriter);
 
         var experiments = sequentialExperiments();
         for(var experiment : experiments){
-            experiment.run();
-            pr.print(experiment.results_csv());
+            experiment.run(true);
+            String result = experiment.results_csv();
+            System.out.println(result);
+            pr.print(result);
+            pr.flush();
         }
-
+        pr.close();
     }
 
 }
