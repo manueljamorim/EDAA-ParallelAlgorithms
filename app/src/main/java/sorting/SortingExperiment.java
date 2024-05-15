@@ -1,7 +1,5 @@
 package sorting;
 
-import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class SortingExperiment {
@@ -19,27 +17,29 @@ public class SortingExperiment {
             endTime = System.currentTimeMillis();
         }
     }
-    public String algorithm;
-    public boolean isParallel;
-    public float memoryUsage;
-    public float timeTaken;
-    public Map<String,String> info;
+    public SorterDetails sorter;
     public int n;
     public long time;
-    private Supplier<IntSorter> sorter;
     private Supplier<int[]> array;
 
-    public SortingExperiment( Supplier<IntSorter> sorter,Supplier<int[]>array,String algorithm, boolean isParallel,Map<String,String>info){
-        this.algorithm = algorithm;
-        this.isParallel = isParallel;
+    public SortingExperiment(SorterDetails sorter, Supplier<int[]>array){
         this.sorter =sorter;
         this.array = array;
-        this.info = info;
+
+    }
+
+    public String results_csv(){
+        StringBuilder r = new StringBuilder();
+        r.append(sorter.name).append(",");
+        r.append(sorter.isParallel).append(",");
+        r.append(n).append(",");
+        r.append(time).append("\n");
+        return r.toString();
     }
 
     public void run(){
 
-        IntSorter s = this.sorter.get();
+        IntSorter s = this.sorter.algorithm.get();
         int[] a = this.array.get();
         this.n = a.length;
 
