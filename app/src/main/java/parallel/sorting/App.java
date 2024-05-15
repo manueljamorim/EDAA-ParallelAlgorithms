@@ -53,10 +53,10 @@ public class App {
             case 1: // Merge Sort
                 MergeSort mergeSort = new MergeSort();
                 startTime = System.currentTimeMillis();
-                int[] sortedArrayMerge = mergeSort.sort(unsortedArray, is_parallel);
+                mergeSort.sort(unsortedArray);
                 endTime = System.currentTimeMillis();
                 System.out.println("Time: " + (endTime - startTime) + " ms");
-                isSorted = checkSorted(sortedArrayMerge);
+                isSorted = checkSorted(unsortedArray);
                 System.out.println("isSorted: " + isSorted);
                 break;
 
