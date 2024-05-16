@@ -1,92 +1,62 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Load the Excel file
-file_path = "benchmark.xlsx"
-data = pd.read_excel(file_path)
 
-data.head()
+data_values = {
+    "Elements": ["10'000", "100'000", "1'000'000", "10'000'000", "100'000'000"],
+    "Sequential Bubble Sort Time": [131, 18053, 1869443, None, None],
+    "Parallel Bubble Sort Time": [1316, 13548, 243988, None, None]
+}
 
-bubble_sort_data = data.iloc[
-    2:, [1, 4]
-]  
-bubble_sort_data.columns = ["Elements", "Bubble Sort Time"]
-bubble_sort_data["Bubble Sort Time"] = (
-    bubble_sort_data["Bubble Sort Time"]
-    .astype(str)
-    .str.replace("ms", "")
-    .replace("nan", "0")
-    .astype(int)
+merge_sort_data = pd.DataFrame(data_values)
+
+merge_sort_data = merge_sort_data.replace({None: pd.NA})
+
+merge_sort_data["Time Ratio"] = (
+    merge_sort_data["Sequential Bubble Sort Time"]
+    / merge_sort_data["Parallel Bubble Sort Time"]
 )
-
-odd_even_merge_data = data.iloc[
-    2:, [7, 10]
-] 
-odd_even_merge_data.columns = ["Elements", "Odd Even Sort Time"]
-odd_even_merge_data["Odd Even Sort Time"] = (
-    odd_even_merge_data["Odd Even Sort Time"]
-    .astype(str)
-    .str.replace("ms", "")
-    .replace("nan", "0")
-    .astype(int)
-)
-
-
-odd_even_merge_data["Elements"] = bubble_sort_data["Elements"]
-
-
-bubble_odd_even_data = pd.merge(bubble_sort_data, odd_even_merge_data, on="Elements")
-bubble_odd_even_data["Elements"] = (
-    bubble_odd_even_data["Elements"].str.replace("'", "").astype(int)
-)
-
-
-bubble_odd_even_data["Time Ratio"] = (
-    bubble_odd_even_data["Bubble Sort Time"]
-    / bubble_odd_even_data["Odd Even Sort Time"]
-)
-bubble_odd_even_data["Time Ratio"] = (
-    bubble_odd_even_data["Time Ratio"].replace(float("inf"), 0).replace(0, float("nan"))
+merge_sort_data["Time Ratio"] = (
+    merge_sort_data["Time Ratio"].replace(float("inf"), 0).replace(0, float("nan"))
 )  # Replace zero ratios with NaN
 
+
 colors = [
-    "green" if bbl < oem else "red"
-    for bbl, oem in zip(
-        bubble_odd_even_data["Bubble Sort Time"],
-        bubble_odd_even_data["Odd Even Sort Time"],
+    "green" if seq < par else "red"
+    for seq, par in zip(
+        merge_sort_data["Sequential Bubble Sort Time"],
+        merge_sort_data["Parallel Bubble Sort Time"],
     )
 ]
 
 
 plt.figure(figsize=(12, 8))
-x = range(len(bubble_odd_even_data["Elements"]))  # the label locations
+x = range(len(merge_sort_data["Elements"]))  
 
 rects = plt.bar(
     x,
-    bubble_odd_even_data["Time Ratio"],
+    merge_sort_data["Time Ratio"],
     width=0.35,
     color=colors,
-    label="Time Ratio (Bubble Sort / Odd Even Sort)",
+    label="Time Ratio (Sequential Bubble Sort / Parallel Odd Even Transposition Sort)",
 )
-plt.ylabel("Time Ratio (Bubble Sort / Odd Even Sort)")
-plt.title("Time Ratio of Bubble Sort to Odd Even Sort with Timings")
-plt.xticks(x, bubble_odd_even_data["Elements"])
+plt.ylabel("Time Ratio (Sequential Bubble Sort / Parallel Odd Even Transposition Sort)")
+plt.title("Time Ratio of Sequential Bubble Sort to Parallel Odd Even Transposition Sort with Timings")
+plt.xticks(x, merge_sort_data["Elements"])
 plt.xlabel("Number of Elements")
 plt.legend()
 
 # Adjust y-axis scale by 10% to fit labels
-ymax = bubble_odd_even_data["Time Ratio"].max() * 1.2
+ymax = merge_sort_data["Time Ratio"].max() * 1.2
 plt.ylim(
     0, ymax if not pd.isna(ymax) else 1
 )  # Handle cases where all values might be NaN
-
-
 
 def autolabel_with_timings(rects):
     for i, rect in enumerate(rects):
         height = rect.get_height()
         label = (
-            f"{height:.2f}\nBBL: {bubble_odd_even_data['Bubble Sort Time'].iloc[i]}ms\nOES: {bubble_odd_even_data['Odd Even Sort Time'].iloc[i]}ms"
+            f"{height:.2f}\nBBL: {merge_sort_data['Sequential Bubble Sort Time'].iloc[i]}ms\nOES: {merge_sort_data['Parallel Bubble Sort Time'].iloc[i]}ms"
             if not pd.isna(height)
             else ""
         )
@@ -101,7 +71,6 @@ def autolabel_with_timings(rects):
             ha="center",
             va="bottom",
         )
-
 
 autolabel_with_timings(rects)
 plt.show()
