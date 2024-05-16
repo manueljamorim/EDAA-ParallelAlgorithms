@@ -1,5 +1,4 @@
 package parallel.sorting.Parallel;
-
 import java.util.Arrays;
 import java.util.concurrent.*;
 
@@ -37,18 +36,40 @@ public class OddEvenMergeSort {
     }
 
     private void merge(int[] array, int low, int mid, int high) {
-        int[] temp = new int[high - low];
-        int i = low, j = mid, k = 0;
-        while (i < mid && j < high) {
-            temp[k++] = array[i] <= array[j] ? array[i++] : array[j++];
+        int[] temp = new int[high - low];  // Temporary array to store merged results
+
+        // 1. Interleaving: Split into odd and even subsequences
+        int oddIndex = 0, evenIndex = 0;
+        for (int i = low; i < high; i++) {
+            if ((i - low) % 2 == 0) {
+                temp[evenIndex++] = array[i]; // Even index
+            } else {
+                temp[oddIndex++] = array[i]; // Odd index
+            }
         }
-        while (i < mid) {
-            temp[k++] = array[i++];
+
+        // 2. Local Sorting (in parallel for efficiency)
+        int finalOddIndex = oddIndex;
+        CompletableFuture<Void> oddSort = CompletableFuture.runAsync(
+                () -> Arrays.sort(temp, 0, finalOddIndex), executor
+        );
+        int finalOddIndex1 = oddIndex;
+        CompletableFuture<Void> evenSort = CompletableFuture.runAsync(
+                () -> Arrays.sort(temp, finalOddIndex1, high - low), executor
+        );
+        CompletableFuture.allOf(oddSort, evenSort).join();
+
+        // 3. Final Merge (odd-even merge)
+        oddIndex = 0;
+        evenIndex = (high - low + 1) / 2;
+        for (int i = low; i < high; i++) {
+            if (oddIndex < (high - low + 1) / 2 &&
+                    (evenIndex >= high - low || temp[oddIndex] <= temp[evenIndex])) {
+                array[i] = temp[oddIndex++];
+            } else {
+                array[i] = temp[evenIndex++];
+            }
         }
-        while (j < high) {
-            temp[k++] = array[j++];
-        }
-        System.arraycopy(temp, 0, array, low, temp.length);
     }
 
     public static void main(String[] args) {
