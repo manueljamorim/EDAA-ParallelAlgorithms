@@ -21,6 +21,14 @@ merge_sort_data["Time Ratio"] = (
 )  # Replace zero ratios with NaN
 
 
+# Replace infinite values with NaN
+merge_sort_data["Time Ratio"] = (
+    merge_sort_data["Time Ratio"].replace(float("inf"), pd.NA)
+)
+
+# Calculate efficiency
+merge_sort_data["Efficiency"] = merge_sort_data["Time Ratio"] / 16
+
 colors = [
     "green" if seq < par else "red"
     for seq, par in zip(
@@ -46,6 +54,14 @@ plt.xticks(x, merge_sort_data["Elements"])
 plt.xlabel("Number of Elements")
 plt.legend()
 
+# Replace infinite values with NaN
+merge_sort_data["Time Ratio"] = (
+    merge_sort_data["Time Ratio"].replace(float("inf"), pd.NA)
+)
+
+# Calculate efficiency
+merge_sort_data["Efficiency"] = merge_sort_data["Time Ratio"] / 16
+
 # Adjust y-axis scale by 10% to fit labels
 ymax = merge_sort_data["Time Ratio"].max() * 1.2
 plt.ylim(
@@ -55,8 +71,9 @@ plt.ylim(
 def autolabel_with_timings(rects):
     for i, rect in enumerate(rects):
         height = rect.get_height()
+        efficiency = merge_sort_data['Efficiency'].iloc[i]
         label = (
-            f"{height:.2f}\nSeq: {merge_sort_data['Sequential Merge Sort Time'].iloc[i]}ms\nPar: {merge_sort_data['Parallel Merge Sort Time'].iloc[i]}ms"
+            f"{height:.2f}\nEff: {efficiency:.2f}\nSeq: {merge_sort_data['Sequential Merge Sort Time'].iloc[i]}ms\nPar: {merge_sort_data['Parallel Merge Sort Time'].iloc[i]}ms"
             if not pd.isna(height)
             else ""
         )

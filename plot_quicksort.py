@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 data_values = {
     "Elements": ["10'000", "100'000", "1'000'000", "10'000'000", "100'000'000"],
     "Sequential Quick Sort Time": [1, 7, 74, 1232, 40771],
-    "Parallel Quick Sort Time": [3, 3, 27, 262, 8874]
+    "Parallel Quick Sort Time": [3, 3, 27, 262, 8874],
 }
 
 merge_sort_data = pd.DataFrame(data_values)
@@ -27,6 +27,14 @@ colors = [
     )
 ]
 
+# Replace infinite values with NaN
+merge_sort_data["Time Ratio"] = merge_sort_data["Time Ratio"].replace(
+    float("inf"), pd.NA
+)
+
+# Calculate efficiency
+merge_sort_data["Efficiency"] = merge_sort_data["Time Ratio"] / 16
+
 plt.figure(figsize=(12, 8))
 x = range(len(merge_sort_data["Elements"]))  # the label locations
 
@@ -43,17 +51,27 @@ plt.xticks(x, merge_sort_data["Elements"])
 plt.xlabel("Number of Elements")
 plt.legend()
 
+# Replace infinite values with NaN
+merge_sort_data["Time Ratio"] = merge_sort_data["Time Ratio"].replace(
+    float("inf"), pd.NA
+)
+
+# Calculate efficiency
+merge_sort_data["Efficiency"] = merge_sort_data["Time Ratio"] / 16
+
 # Adjust y-axis scale by 10% to fit labels
 ymax = merge_sort_data["Time Ratio"].max() * 1.2
 plt.ylim(
     0, ymax if not pd.isna(ymax) else 1
 )  # Handle cases where all values might be NaN
 
+
 def autolabel_with_timings(rects):
     for i, rect in enumerate(rects):
         height = rect.get_height()
+        efficiency = merge_sort_data["Efficiency"].iloc[i]
         label = (
-            f"{height:.2f}\nSeq: {merge_sort_data['Sequential Quick Sort Time'].iloc[i]}ms\nPar: {merge_sort_data['Parallel Quick Sort Time'].iloc[i]}ms"
+            f"{height:.2f}\nEff: {efficiency:.2f}\nSeq: {merge_sort_data['Sequential Quick Sort Time'].iloc[i]}ms\nPar: {merge_sort_data['Parallel Quick Sort Time'].iloc[i]}ms"
             if not pd.isna(height)
             else ""
         )
@@ -68,6 +86,7 @@ def autolabel_with_timings(rects):
             ha="center",
             va="bottom",
         )
+
 
 autolabel_with_timings(rects)
 plt.show()

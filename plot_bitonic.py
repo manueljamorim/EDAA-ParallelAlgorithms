@@ -43,6 +43,14 @@ plt.xticks(x, sort_data["Elements"])
 plt.xlabel("Number of Elements")
 plt.legend()
 
+# Replace infinite values with NaN
+sort_data["Time Ratio"] = (
+    sort_data["Time Ratio"].replace(float("inf"), pd.NA)
+)
+
+# Calculate efficiency
+sort_data["Efficiency"] = sort_data["Time Ratio"] / 16
+
 # Adjust y-axis scale by 10% to fit labels
 ymax = sort_data["Time Ratio"].max() * 1.2
 plt.ylim(
@@ -52,8 +60,9 @@ plt.ylim(
 def autolabel_with_timings(rects):
     for i, rect in enumerate(rects):
         height = rect.get_height()
+        efficiency = sort_data['Efficiency'].iloc[i]
         label = (
-            f"{height:.2f}\nQuick: {sort_data['Parallel Quick Sort Time'].iloc[i]}ms\nBitonic: {sort_data['Bitonic Sort Time'].iloc[i]}ms"
+            f"{height:.2f}\nEff: {efficiency:.2f}\nQuick: {sort_data['Parallel Quick Sort Time'].iloc[i]}ms\nBitonic: {sort_data['Bitonic Sort Time'].iloc[i]}ms"
             if not pd.isna(height)
             else ""
         )
