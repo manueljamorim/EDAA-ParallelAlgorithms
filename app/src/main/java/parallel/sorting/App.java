@@ -25,7 +25,7 @@ public class App {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
 
-        if(true){
+        if(false){
                 Runnable runBenchmarks = () -> {
                     try {
                         Benchmark.runBenchmarks();

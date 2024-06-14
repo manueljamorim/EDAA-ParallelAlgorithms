@@ -48,7 +48,7 @@ plt.legend()
 sort_data["Time Ratio"] = sort_data["Time Ratio"].replace(float("inf"), pd.NA)
 
 # Calculate efficiency
-sort_data["Efficiency"] = sort_data["Time Ratio"] / 16
+sort_data["Efficiency"] = sort_data["Time Ratio"] / 8
 
 
 ymax = sort_data["Time Ratio"].max() * 1.2

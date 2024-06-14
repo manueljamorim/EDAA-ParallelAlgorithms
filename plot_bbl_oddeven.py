@@ -52,7 +52,7 @@ merge_sort_data["Time Ratio"] = (
 )
 
 # Calculate efficiency
-merge_sort_data["Efficiency"] = merge_sort_data["Time Ratio"] / 16
+merge_sort_data["Efficiency"] = merge_sort_data["Time Ratio"] / 8
 
 # Adjust y-axis scale by 10% to fit labels
 ymax = merge_sort_data["Time Ratio"].max() * 1.2

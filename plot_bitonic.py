@@ -49,7 +49,7 @@ sort_data["Time Ratio"] = (
 )
 
 # Calculate efficiency
-sort_data["Efficiency"] = sort_data["Time Ratio"] / 16
+sort_data["Efficiency"] = sort_data["Time Ratio"] / 8
 
 # Adjust y-axis scale by 10% to fit labels
 ymax = sort_data["Time Ratio"].max() * 1.2
